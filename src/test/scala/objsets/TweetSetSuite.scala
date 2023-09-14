@@ -33,6 +33,11 @@ class TweetSetSuite extends munit.FunSuite:
       assertEquals(size(set5.filter(tw => tw.retweets == 20)), 2)
   }
 
+//  test("contains") {
+  //    new TestSets:
+  //      assertEquals(set5.contains(Tweet("f", "f body", 7)), false)
+  //  }
+
   test("union: set4c and set4d") {
     new TestSets:
       assertEquals(size(set4c.union(set4d)), 4)
@@ -57,4 +62,5 @@ class TweetSetSuite extends munit.FunSuite:
 
 
   import scala.concurrent.duration.*
+
   override val munitTimeout = 10.seconds
