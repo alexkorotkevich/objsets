@@ -3,6 +3,10 @@ package objsets
 import TweetReader.*
 
 class Tweet(val user: String, val text: String, val retweets: Int):
+  def hasMoreRetweets(that: Tweet): Tweet =
+    if (this.retweets >= that.retweets) then this
+    else that
+
   override def toString: String =
     "User: " + user + "\n" +
       "Text: " + text + " [" + retweets + "]"
@@ -16,15 +20,6 @@ abstract class TweetSet extends TweetSetInterface:
 
   def mostRetweeted: Tweet
 
-  /**
-   * Returns a list containing all tweets of this set, sorted by retweet count
-   * in descending order. In other words, the head of the resulting list should
-   * have the highest retweet count.
-   *
-   * Hint: the method `remove` on TweetSet will be very useful.
-   * Question: Should we implement this method here, or should it remain abstract
-   * and be implemented in the subclasses?
-   */
   def descendingByRetweet: TweetList
 
   def incl(tweet: Tweet): TweetSet
@@ -44,7 +39,7 @@ class Empty extends TweetSet:
 
   def union(that: TweetSet): TweetSet = that
 
-  def mostRetweeted: Tweet = throw new NoSuchElementException
+  def mostRetweeted: Tweet = throw new NoSuchElementException("Set is empty")
 
   def isEmpty = true
 
@@ -68,6 +63,14 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet:
 
   def union(that: TweetSet): TweetSet =
     left.union(right.union(that)).incl(elem)
+
+  def mostRetweeted: Tweet =
+    if left.isEmpty && right.isEmpty then elem
+    else if left.isEmpty then elem.hasMoreRetweets(right.mostRetweeted)
+    else if right.isEmpty then elem.hasMoreRetweets(left.mostRetweeted)
+    else elem.hasMoreRetweets(left.mostRetweeted).hasMoreRetweets(right.mostRetweeted)
+
+  def isEmpty = false
 
   def contains(x: Tweet): Boolean =
     if x.text < elem.text then
@@ -96,14 +99,10 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet:
     left.foreach(f)
     right.foreach(f)
 
-  def mostRetweeted: Tweet = ???
-
-  def isEmpty = false
-
-  def descendingByRetweet: TweetList = ???
-//  if isEmpty then Nil
-//  else
-//    new Cons(mostRetweeted, remove(mostRetweeted).descendingByRetweet)
+  def descendingByRetweet: TweetList =
+    if isEmpty then Nil
+    else
+      new Cons(mostRetweeted, remove(mostRetweeted).descendingByRetweet)
 
 trait TweetList:
   def head: Tweet
@@ -127,23 +126,15 @@ object Nil extends TweetList:
 class Cons(val head: Tweet, val tail: TweetList) extends TweetList:
   def isEmpty = false
 
-
 object GoogleVsApple:
-  val google = List("android", "Android", "galaxy", "Galaxy", "nexus", "Nexus")
-  val apple = List("ios", "iOS", "iphone", "iPhone", "ipad", "iPad")
+  private val google = List("android", "Android", "galaxy", "Galaxy", "nexus", "Nexus")
+  private val apple = List("ios", "iOS", "iphone", "iPhone", "ipad", "iPad")
 
-  lazy val googleTweets: TweetSet = TweetReader.allTweets.filter(tweet => google.exists(item => tweet.text.contains(item)))
-  lazy val appleTweets: TweetSet = TweetReader.allTweets.filter(tweet => apple.exists(item => tweet.text.contains(item)))
-  //  val filteredTweets: TweetSet = TweetReader.allTweets.filter(tweet => tweet.retweets > 10)
-  /**
-   * A list of all tweets mentioning a keyword from either apple or google,
-   * sorted by the number of retweets.
-   */
-  lazy val trending: TweetList = ???
+  private lazy val googleTweets: TweetSet = TweetReader.allTweets.filter(tweet => google.exists(keyword => tweet.text.contains(keyword)))
+  private lazy val appleTweets: TweetSet = TweetReader.allTweets.filter(tweet => apple.exists(keyword => tweet.text.contains(keyword)))
+
+  lazy val trending: TweetList = googleTweets.union(appleTweets).descendingByRetweet
 
 object Main extends App:
-  // Print the trending tweets
   GoogleVsApple.trending foreach println
-//  println(GoogleVsApple.filteredTweets)
-//  GoogleVsApple.filteredTweets foreach println
 
