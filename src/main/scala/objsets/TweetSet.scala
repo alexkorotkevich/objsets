@@ -12,7 +12,8 @@ class Tweet(val user: String, val text: String, val retweets: Int):
       "Text: " + text + " [" + retweets + "]"
 
 abstract class TweetSet extends TweetSetInterface:
-  def filter(p: Tweet => Boolean): TweetSet
+  def filter(p: Tweet => Boolean): TweetSet =
+    filterAcc(p, new Empty)
 
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet
 
@@ -33,7 +34,6 @@ abstract class TweetSet extends TweetSetInterface:
   def foreach(f: Tweet => Unit): Unit
 
 class Empty extends TweetSet:
-  def filter(p: Tweet => Boolean): TweetSet = this
 
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = acc
 
@@ -54,12 +54,10 @@ class Empty extends TweetSet:
   def descendingByRetweet: TweetList = Nil
 
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet:
-  def filter(p: Tweet => Boolean): TweetSet =
-    this.filterAcc(p, new Empty)
 
   def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet =
-    if p(elem) then left.filterAcc(p, right.filterAcc(p, acc.incl(elem)))
-    else left.filterAcc(p, right.filterAcc(p, acc))
+    val accValue = if p(elem) then acc.incl(elem) else acc
+    left.filterAcc(p, right.filterAcc(p, accValue))
 
   def union(that: TweetSet): TweetSet =
     left.union(right.union(that)).incl(elem)
