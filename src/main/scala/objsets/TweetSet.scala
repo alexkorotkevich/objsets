@@ -3,9 +3,6 @@ package objsets
 import TweetReader.*
 
 class Tweet(val user: String, val text: String, val retweets: Int):
-  def hasMoreRetweets(that: Tweet): Tweet =
-    if (this.retweets >= that.retweets) then this
-    else that
 
   override def toString: String =
     "User: " + user + "\n" +
@@ -63,10 +60,9 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet:
     left.union(right.union(that)).incl(elem)
 
   def mostRetweeted: Tweet =
-    if left.isEmpty && right.isEmpty then elem
-    else if left.isEmpty then elem.hasMoreRetweets(right.mostRetweeted)
-    else if right.isEmpty then elem.hasMoreRetweets(left.mostRetweeted)
-    else elem.hasMoreRetweets(left.mostRetweeted).hasMoreRetweets(right.mostRetweeted)
+    var hasMoreRetweets = this.elem
+    foreach(that => hasMoreRetweets = if that.retweets > this.elem.retweets then that else hasMoreRetweets)
+    hasMoreRetweets
 
   def isEmpty = false
 
