@@ -61,7 +61,7 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet:
 
   def mostRetweeted: Tweet =
     var hasMoreRetweets = this.elem
-    foreach(that => hasMoreRetweets = if that.retweets > this.elem.retweets then that else hasMoreRetweets)
+    foreach(that => hasMoreRetweets = if that.retweets > this.elem.retweets then that else this.elem)
     hasMoreRetweets
 
   def isEmpty = false
