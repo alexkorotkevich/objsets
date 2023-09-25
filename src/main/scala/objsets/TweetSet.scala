@@ -9,6 +9,7 @@ class Tweet(val user: String, val text: String, val retweets: Int):
       "Text: " + text + " [" + retweets + "]"
 
 abstract class TweetSet extends TweetSetInterface:
+
   def filter(p: Tweet => Boolean): TweetSet =
     filterAcc(p, new Empty)
 
@@ -21,8 +22,6 @@ abstract class TweetSet extends TweetSetInterface:
   def descendingByRetweet: TweetList
 
   def incl(tweet: Tweet): TweetSet
-
-  def isEmpty: Boolean
 
   def remove(tweet: Tweet): TweetSet
 
@@ -37,8 +36,6 @@ class Empty extends TweetSet:
   def union(that: TweetSet): TweetSet = that
 
   def mostRetweeted: Tweet = throw new NoSuchElementException("Set is empty")
-
-  def isEmpty = true
 
   def contains(tweet: Tweet): Boolean = false
 
@@ -60,11 +57,9 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet:
     left.union(right.union(that)).incl(elem)
 
   def mostRetweeted: Tweet =
-    var hasMoreRetweets = this.elem
-    foreach(that => hasMoreRetweets = if that.retweets > this.elem.retweets then that else this.elem)
+    var hasMoreRetweets = elem
+    foreach(that => hasMoreRetweets = if that.retweets > hasMoreRetweets.retweets then that else hasMoreRetweets)
     hasMoreRetweets
-
-  def isEmpty = false
 
   def contains(x: Tweet): Boolean =
     if x.text < elem.text then
@@ -94,9 +89,7 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet:
     right.foreach(f)
 
   def descendingByRetweet: TweetList =
-    if isEmpty then Nil
-    else
-      new Cons(mostRetweeted, remove(mostRetweeted).descendingByRetweet)
+    new Cons(mostRetweeted, remove(mostRetweeted).descendingByRetweet)
 
 trait TweetList:
   def head: Tweet
@@ -131,4 +124,3 @@ object GoogleVsApple:
 
 object Main extends App:
   GoogleVsApple.trending foreach println
-

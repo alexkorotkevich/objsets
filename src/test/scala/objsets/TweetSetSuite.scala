@@ -33,7 +33,7 @@ class TweetSetSuite extends munit.FunSuite:
       assertEquals(size(set5.filter(tw => tw.retweets == 20)), 2)
   }
 
-//  test("contains") {
+  //  test("contains") {
   //    new TestSets:
   //      assertEquals(set5.contains(Tweet("f", "f body", 7)), false)
   //  }
@@ -58,6 +58,18 @@ class TweetSetSuite extends munit.FunSuite:
       val trends = set5.descendingByRetweet
       assert(!trends.isEmpty)
       assert(trends.head.user == "a" || trends.head.user == "b")
+  }
+
+  test("descending") {
+    val set = Empty()
+      .incl(Tweet("a", "a body", 20))
+      .incl(Tweet("b", "b body", 30))
+      .incl(Tweet("c", "c body", 25))
+      .incl(Tweet("d", "d body", 40))
+      .incl(Tweet("e", "e body", 35))
+    val trends = set.descendingByRetweet
+
+    assertEquals(trends.head.user, "d")
   }
 
 
